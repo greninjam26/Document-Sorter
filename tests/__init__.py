@@ -1,0 +1,2 @@
+"""Tests for Document Sorter."""
+
