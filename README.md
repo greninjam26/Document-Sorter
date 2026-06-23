@@ -14,8 +14,18 @@ Files that cannot be processed will be moved to an error folder, and every resul
 
 ## Run
 
+Install the barcode-reading dependencies once:
+
 ```bash
-python3 main.py /path/to/starting-folder
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+```
+
+Then scan a folder:
+
+```bash
+python main.py /path/to/starting-folder
 ```
 
 The starting folder is required. If it is omitted, the program will return an error.

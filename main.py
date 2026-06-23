@@ -10,7 +10,7 @@ from document_sorter.sorter import sort_documents
 def parse_arguments() -> argparse.Namespace:
     """Read command-line options."""
     parser = argparse.ArgumentParser(
-        description="Find PDFs ready to be sorted.")
+        description="Find PDFs and read their barcodes.")
     parser.add_argument(
         "source",
         type=Path,
@@ -24,12 +24,12 @@ def main() -> int:
     arguments = parse_arguments()
 
     try:
-        sort_documents(arguments.source)
+        all_scans_succeeded = sort_documents(arguments.source)
     except SourceDirectoryError as error:
         print(f"Error: {error}")
         return 1
 
-    return 0
+    return 0 if all_scans_succeeded else 1
 
 
 if __name__ == "__main__":

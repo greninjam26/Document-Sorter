@@ -24,11 +24,16 @@ def find_pdf_files(source_directory: Path) -> list[Path]:
             f"Source path is not a directory: {source_directory}"
         )
 
-    return sorted(
-        (
-            path
-            for path in source_directory.iterdir()
-            if path.is_file() and path.suffix.lower() == ".pdf"
-        ),
-        key=lambda path: path.name.lower(),
-    )
+    try:
+        return sorted(
+            (
+                path
+                for path in source_directory.iterdir()
+                if path.is_file() and path.suffix.lower() == ".pdf"
+            ),
+            key=lambda path: path.name.lower(),
+        )
+    except OSError as error:
+        raise SourceDirectoryError(
+            f"Cannot access source directory: {source_directory}"
+        ) from error
