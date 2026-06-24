@@ -27,10 +27,10 @@ python -m pip install -r requirements.txt
 Then scan a folder:
 
 ```bash
-python main.py /path/to/starting-folder
+python main.py /path/to/starting-folder /path/to/destination-folder
 ```
 
-The starting folder is required. If it is omitted, the program will return an error.
+The starting and destination folders are required. If either one is omitted, the program will return an error.
 
 ## Test
 

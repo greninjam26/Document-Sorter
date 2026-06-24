@@ -26,7 +26,8 @@ def _load_dependencies() -> tuple[Any, Any, Any]:
 def read_barcodes(pdf_file: Path, dpi: int = 300) -> list[str]:
     """Return the distinct barcode values found on every page of a PDF.
 
-    The PDF is rendered in memory and is never modified. Validation of the expected ``SAL`` prefix belongs to the next processing stage.
+    The PDF is rendered in memory and is never modified. 
+    Validation of the expected ``SAL`` prefix belongs to the next processing stage.
     """
     pdf_file = pdf_file.expanduser()
     if not pdf_file.is_file():

@@ -16,6 +16,11 @@ def parse_arguments() -> argparse.Namespace:
         type=Path,
         help="starting folder containing the PDF files",
     )
+    parser.add_argument(
+        "destination",
+        type=Path,
+        help="folder where renamed PDF files will be moved",
+    )
     return parser.parse_args()
 
 
@@ -24,7 +29,7 @@ def main() -> int:
     arguments = parse_arguments()
 
     try:
-        results = sort_documents(arguments.source)
+        results = sort_documents(arguments.source, arguments.destination)
     except SourceDirectoryError as error:
         print(f"Error: {error}")
         return 1

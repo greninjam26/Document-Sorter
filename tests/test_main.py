@@ -16,7 +16,10 @@ class MainTests(unittest.TestCase):
         """Provide a source argument without reading the real command line."""
         arguments_patcher = patch(
             "main.parse_arguments",
-            return_value=Namespace(source=Path("source")),
+            return_value=Namespace(
+                source=Path("source"),
+                destination=Path("destination"),
+            ),
         )
         self.addCleanup(arguments_patcher.stop)
         arguments_patcher.start()
@@ -24,7 +27,11 @@ class MainTests(unittest.TestCase):
     @patch(
         "main.sort_documents",
         return_value=[
-            DocumentResult(Path("document.pdf"), sal_barcode="SAL123")
+            DocumentResult(
+                Path("document.pdf"),
+                sal_barcode="SAL123",
+                destination_file=Path("destination/SAL123.pdf"),
+            )
         ],
     )
     def test_returns_success_when_every_document_succeeds(
@@ -36,7 +43,8 @@ class MainTests(unittest.TestCase):
 
     @patch(
         "main.sort_documents",
-        return_value=[DocumentResult(Path("document.pdf"), error="damaged PDF")],
+        return_value=[DocumentResult(
+            Path("document.pdf"), error="damaged PDF")],
     )
     def test_returns_failure_when_a_document_fails(
         self,
@@ -48,4 +56,3 @@ class MainTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

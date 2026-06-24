@@ -19,7 +19,7 @@ def validate_sal_barcode(barcodes: Iterable[str]) -> str:
     """
     if isinstance(barcodes, str):
         raise TypeError(
-            "barcodes must be a collection of strings, even if the collection only have one string")
+            "barcodes must be a collection of strings, even if the collection only has one string")
 
     sal_barcodes: list[str] = []
 
