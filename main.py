@@ -24,12 +24,12 @@ def main() -> int:
     arguments = parse_arguments()
 
     try:
-        all_scans_succeeded = sort_documents(arguments.source)
+        results = sort_documents(arguments.source)
     except SourceDirectoryError as error:
         print(f"Error: {error}")
         return 1
 
-    return 0 if all_scans_succeeded else 1
+    return 0 if all(result.succeeded for result in results) else 1
 
 
 if __name__ == "__main__":
