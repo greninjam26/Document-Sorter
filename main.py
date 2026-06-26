@@ -10,7 +10,7 @@ from document_sorter.sorter import sort_documents
 def parse_arguments() -> argparse.Namespace:
     """Read command-line options."""
     parser = argparse.ArgumentParser(
-        description="Find PDFs and read their barcodes.")
+        description="Rename and move PDFs using their SAL barcodes.")
     parser.add_argument(
         "source",
         type=Path,

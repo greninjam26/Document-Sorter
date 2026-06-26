@@ -1,7 +1,6 @@
 # Document-Sorter
 
-This Python project finds PDF files, reads a barcode beginning with `SAL`, renames each PDF to the barcode value, and moves it to a destination folder.
-Files that cannot be processed will be moved to an error folder, and every result will be written to a log.
+This Python project finds PDF files, reads a barcode beginning with `SAL`, renames each PDF to the barcode value, and moves it to a destination folder. Files that cannot be processed are moved to an error folder. Later, every result will be written to a log.
 
 Requires Python 3.10 or newer.
 
@@ -30,7 +29,8 @@ Then scan a folder:
 python main.py /path/to/starting-folder /path/to/destination-folder
 ```
 
-The starting and destination folders are required. If either one is omitted, the program will return an error.
+The starting and destination folders are required. If either one is omitted, the program will return an error. Files with errors are moved to an `errors` folder inside the destination
+folder.
 
 ## Test
 

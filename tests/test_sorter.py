@@ -47,6 +47,10 @@ class SortDocumentsTests(unittest.TestCase):
         self.assertIsNone(result.error)
 
     @patch(
+        "document_sorter.sorter.move_pdf_to_error_folder",
+        return_value=Path("destination/errors/document.pdf"),
+    )
+    @patch(
         "document_sorter.sorter.read_barcodes",
         side_effect=BarcodeReadError("damaged PDF"),
     )
@@ -58,13 +62,22 @@ class SortDocumentsTests(unittest.TestCase):
         self,
         _find_pdf_files,
         _read_barcodes,
+        _move_pdf_to_error_folder,
     ) -> None:
         """A barcode-reading exception should make the batch fail."""
         result = sort_documents(Path("source"), Path("destination"))[0]
 
         self.assertFalse(result.succeeded)
         self.assertEqual(result.error, "damaged PDF")
+        self.assertEqual(
+            result.error_file,
+            Path("destination/errors/document.pdf"),
+        )
 
+    @patch(
+        "document_sorter.sorter.move_pdf_to_error_folder",
+        return_value=Path("destination/errors/document.pdf"),
+    )
     @patch("document_sorter.sorter.read_barcodes", return_value=[])
     @patch(
         "document_sorter.sorter.find_pdf_files",
@@ -74,13 +87,22 @@ class SortDocumentsTests(unittest.TestCase):
         self,
         _find_pdf_files,
         _read_barcodes,
+        _move_pdf_to_error_folder,
     ) -> None:
         """A PDF without a barcode should make the batch fail."""
         result = sort_documents(Path("source"), Path("destination"))[0]
 
         self.assertFalse(result.succeeded)
         self.assertIn("No barcode", result.error or "")
+        self.assertEqual(
+            result.error_file,
+            Path("destination/errors/document.pdf"),
+        )
 
+    @patch(
+        "document_sorter.sorter.move_pdf_to_error_folder",
+        return_value=Path("destination/errors/document.pdf"),
+    )
     @patch(
         "document_sorter.sorter.read_barcodes",
         return_value=["SAL123", "SAL456"],
@@ -93,13 +115,22 @@ class SortDocumentsTests(unittest.TestCase):
         self,
         _find_pdf_files,
         _read_barcodes,
+        _move_pdf_to_error_folder,
     ) -> None:
         """A PDF with conflicting SAL values should make the batch fail."""
         result = sort_documents(Path("source"), Path("destination"))[0]
 
         self.assertFalse(result.succeeded)
         self.assertIn("Multiple barcodes", result.error or "")
+        self.assertEqual(
+            result.error_file,
+            Path("destination/errors/document.pdf"),
+        )
 
+    @patch(
+        "document_sorter.sorter.move_pdf_to_error_folder",
+        return_value=Path("destination/errors/document.pdf"),
+    )
     @patch(
         "document_sorter.sorter.move_pdf_to_destination",
         side_effect=FileMoveError("destination file already exists"),
@@ -117,6 +148,7 @@ class SortDocumentsTests(unittest.TestCase):
         _find_pdf_files,
         _read_barcodes,
         _move_pdf_to_destination,
+        _move_pdf_to_error_folder,
     ) -> None:
         """A move error should make the document fail without crashing."""
         result = sort_documents(Path("source"), Path("destination"))[0]
@@ -124,7 +156,37 @@ class SortDocumentsTests(unittest.TestCase):
         self.assertFalse(result.succeeded)
         self.assertEqual(result.sal_barcode, "SAL123")
         self.assertIsNone(result.destination_file)
+        self.assertEqual(
+            result.error_file,
+            Path("destination/errors/document.pdf"),
+        )
         self.assertIn("destination file already exists", result.error or "")
+
+    @patch(
+        "document_sorter.sorter.move_pdf_to_error_folder",
+        side_effect=FileMoveError("error folder blocked"),
+    )
+    @patch(
+        "document_sorter.sorter.read_barcodes",
+        side_effect=BarcodeReadError("damaged PDF"),
+    )
+    @patch(
+        "document_sorter.sorter.find_pdf_files",
+        return_value=[Path("document.pdf")],
+    )
+    def test_reports_when_error_folder_move_fails(
+        self,
+        _find_pdf_files,
+        _read_barcodes,
+        _move_pdf_to_error_folder,
+    ) -> None:
+        """An error-folder move problem should be included in the result."""
+        result = sort_documents(Path("source"), Path("destination"))[0]
+
+        self.assertFalse(result.succeeded)
+        self.assertIsNone(result.error_file)
+        self.assertIn("damaged PDF", result.error or "")
+        self.assertIn("error folder blocked", result.error or "")
 
 
 if __name__ == "__main__":

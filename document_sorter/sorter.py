@@ -8,22 +8,27 @@ from document_sorter.barcode_validator import (
     BarcodeValidationError,
     validate_sal_barcode,
 )
-from document_sorter.file_mover import FileMoveError, move_pdf_to_destination
+from document_sorter.file_mover import (
+    FileMoveError,
+    move_pdf_to_destination,
+    move_pdf_to_error_folder,
+)
 from document_sorter.scanner import find_pdf_files
 
 
 @dataclass(frozen=True)
 class DocumentResult:
-    """Barcode-processing result for one PDF."""
+    """Processing result for one PDF."""
 
     source_file: Path
     sal_barcode: str | None = None
     destination_file: Path | None = None
+    error_file: Path | None = None
     error: str | None = None
 
     @property
     def succeeded(self) -> bool:
-        """Return whether the PDF produced a valid SAL barcode."""
+        """Return whether the PDF was renamed and moved successfully."""
         return (
             self.error is None
             and self.sal_barcode is not None
@@ -45,8 +50,13 @@ def sort_documents(
             barcodes = read_barcodes(pdf_file)
             sal_barcode = validate_sal_barcode(barcodes)
         except (BarcodeReadError, BarcodeValidationError) as error:
-            print(f"- {pdf_file.name}: ERROR - {error}")
-            results.append(DocumentResult(pdf_file, error=str(error)))
+            results.append(
+                _record_error_result(
+                    pdf_file,
+                    destination_directory,
+                    str(error),
+                )
+            )
             continue
 
         try:
@@ -56,12 +66,12 @@ def sort_documents(
                 sal_barcode,
             )
         except FileMoveError as error:
-            print(f"- {pdf_file.name}: ERROR - {error}")
             results.append(
-                DocumentResult(
+                _record_error_result(
                     pdf_file,
-                    sal_barcode=sal_barcode,
-                    error=str(error),
+                    destination_directory,
+                    str(error),
+                    sal_barcode,
                 )
             )
             continue
@@ -76,3 +86,33 @@ def sort_documents(
         )
 
     return results
+
+
+def _record_error_result(
+    pdf_file: Path,
+    destination_directory: Path,
+    error_message: str,
+    sal_barcode: str | None = None,
+) -> DocumentResult:
+    """Move a failed PDF to the error folder and return its result."""
+    try:
+        error_file = move_pdf_to_error_folder(pdf_file, destination_directory)
+    except FileMoveError as move_error:
+        combined_error = (
+            f"{error_message}; also could not move to error folder: "
+            f"{move_error}"
+        )
+        print(f"- {pdf_file.name}: ERROR - {combined_error}")
+        return DocumentResult(
+            pdf_file,
+            sal_barcode=sal_barcode,
+            error=combined_error,
+        )
+
+    print(f"- {pdf_file.name}: ERROR - {error_message}; moved to {error_file}")
+    return DocumentResult(
+        pdf_file,
+        sal_barcode=sal_barcode,
+        error_file=error_file,
+        error=error_message,
+    )
