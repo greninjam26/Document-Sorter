@@ -14,12 +14,14 @@ class BarcodeValidationError(ValueError):
 def validate_sal_barcode(barcodes: Iterable[str]) -> str:
     """Return the one distinct barcode beginning with uppercase ``SAL``.
 
-    Values that do not begin with ``SAL`` are ignored. 
+    Values that do not begin with ``SAL`` are ignored.
     Repeated copies of the same SAL value count as one barcode.
     """
     if isinstance(barcodes, str):
         raise TypeError(
-            "barcodes must be a collection of strings, even if the collection only has one string")
+            "barcodes must be a collection of strings, even if the collection "
+            "only has one string"
+        )
 
     sal_barcodes: list[str] = []
 

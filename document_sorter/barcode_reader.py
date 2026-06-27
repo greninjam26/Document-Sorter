@@ -26,8 +26,9 @@ def _load_dependencies() -> tuple[Any, Any, Any]:
 def read_barcodes(pdf_file: Path, dpi: int = 300) -> list[str]:
     """Return the distinct barcode values found on every page of a PDF.
 
-    The PDF is rendered in memory and is never modified. 
-    Validation of the expected ``SAL`` prefix belongs to the next processing stage.
+    The PDF is rendered in memory and is never modified.
+    Validation of the expected ``SAL`` prefix belongs to the next processing
+    stage.
     """
     pdf_file = pdf_file.expanduser()
     if not pdf_file.is_file():
@@ -42,7 +43,8 @@ def read_barcodes(pdf_file: Path, dpi: int = 300) -> list[str]:
         with fitz.open(pdf_file) as document:
             if document.needs_pass:
                 raise BarcodeReadError(
-                    f"PDF is password-protected: {pdf_file.name}")
+                    f"PDF is password-protected: {pdf_file.name}"
+                )
 
             zoom = dpi / 72
             matrix = fitz.Matrix(zoom, zoom)

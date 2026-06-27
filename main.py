@@ -3,6 +3,7 @@
 import argparse
 from pathlib import Path
 
+from document_sorter.processing_log import LogWriteError, write_processing_log
 from document_sorter.scanner import SourceDirectoryError
 from document_sorter.sorter import sort_documents
 
@@ -33,6 +34,14 @@ def main() -> int:
     except SourceDirectoryError as error:
         print(f"Error: {error}")
         return 1
+
+    try:
+        log_file = write_processing_log(results, arguments.destination)
+    except LogWriteError as error:
+        print(f"Error: {error}")
+        return 1
+
+    print(f"Log written to {log_file}")
 
     return 0 if all(result.succeeded for result in results) else 1
 
